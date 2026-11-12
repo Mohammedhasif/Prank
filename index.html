@@ -3,53 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Funny Sound Surprise</title>
+<title>A Little Surprise 😂</title>
 <style>
-  body{font-family:system-ui,sans-serif;background:#151522;color:#fff;display:grid;place-items:center;min-height:100vh;margin:0}
-  main{width:min(90%,420px);text-align:center;background:#25253a;padding:28px;border-radius:22px;box-sizing:border-box}
-  h1{font-size:28px} p{color:#d8d8e8}
-  button{border:0;border-radius:12px;padding:14px 22px;margin:8px;font-size:17px;font-weight:700;cursor:pointer}
-  #start{background:#ffd54a;color:#222} #stop{background:#ff6666;color:#fff}
-  #status{min-height:28px;font-weight:600}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;color:#fff;background:radial-gradient(circle at top,#5140a5,#171329 65%);text-align:center}
+main{width:min(92%,480px);padding:32px 24px;cursor:pointer;outline:none}.emoji{font-size:64px;animation:bob 1.4s ease-in-out infinite}
+h1{font-size:clamp(28px,7vw,42px);margin:12px 0}p{color:#e7e2ff;line-height:1.55}
+.hint{display:inline-block;margin-top:22px;padding:13px 18px;border:1px solid #bcb1ff;border-radius:999px;background:#ffffff14;font-weight:700}
+#status{margin-top:16px;font-size:14px;color:#d4cdfa;min-height:22px}
+@keyframes bob{50%{transform:translateY(-9px) rotate(5deg)}}@media(prefers-reduced-motion:reduce){.emoji{animation:none}}
 </style>
 </head>
 <body>
-<main>
-  <h1>😂 Surprise Sound Box</h1>
-  <p>Tap start to hear a silly sequence of sounds!</p>
-  <button id="start">▶ Start</button>
-  <button id="stop">■ Stop</button>
-  <div id="status">Ready</div>
-  <audio id="player" preload="auto"></audio>
+<main id="page" role="button" tabindex="0" aria-label="Tap anywhere for a surprise">
+<div class="emoji">🎁😂</div><h1>A little surprise is waiting!</h1>
+<p>Tap anywhere on this page to reveal it.</p><div class="hint">TAP ANYWHERE</div>
+<div id="status" aria-live="polite">Your browser requires a tap before a website can play sound.</div>
 </main>
 <script>
-const tracks = [
-  {name:"Baby laughing",file:"laugh.mp3"},
-  {name:"Baby crying",file:"baby-cry.mp3"},
-  {name:"Funny cartoon sound",file:"funny.mp3"}
-];
-const player=document.getElementById("player");
-const status=document.getElementById("status");
-let index=0, playing=false;
-function next(){
-  if(!playing) return;
-  const track=tracks[index];
-  status.textContent="Now playing: "+track.name;
-  player.src=track.file;
-  player.currentTime=0;
-  player.play().catch(()=>{status.textContent="Tap Start again to allow audio.";playing=false;});
-  index=(index+1)%tracks.length;
+(()=>{
+let ctx=null,master=null,started=false;
+const status=document.getElementById('status'),page=document.getElementById('page');
+function tone(freq,t,d,type='sine',vol=.1,end=null){
+ const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);
+ if(end!==null)o.frequency.exponentialRampToValueAtTime(Math.max(1,end),t+d);
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.025);
+ g.gain.setValueAtTime(vol,t+Math.max(.04,d-.05));g.gain.exponentialRampToValueAtTime(.0001,t+d);
+ o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.02);
 }
-player.addEventListener("ended",next);
-document.getElementById("start").addEventListener("click",()=>{
-  if(playing)return;
-  playing=true;
-  next();
-});
-document.getElementById("stop").addEventListener("click",()=>{
-  playing=false; player.pause(); player.currentTime=0;
-  status.textContent="Stopped";
-});
+function laugh(t){for(let i=0;i<7;i++)tone(430+(i%3)*95,t+i*.16,.12,'triangle',.10,650+(i%2)*100)}
+function cry(t){for(let i=0;i<4;i++)tone(720-i*55,t+i*.48,.38,'sine',.085,390-i*25)}
+function boing(t){tone(180,t,.65,'sawtooth',.07,720);tone(520,t+.18,.22,'triangle',.08,260)}
+function sequence(){
+ const n=ctx.currentTime+.08;laugh(n);cry(n+1.8);boing(n+4);laugh(n+5.1);cry(n+7);boing(n+9.2);
+ if(started)setTimeout(()=>{if(started)sequence()},11500);
+}
+async function start(){
+ if(started)return;started=true;
+ try{
+  ctx=new(window.AudioContext||window.webkitAudioContext)();await ctx.resume();
+  master=ctx.createGain();master.gain.value=.75;master.connect(ctx.destination);
+  status.textContent='Surprise unlocked! Close this tab to stop the sound.';
+  page.querySelector('p').textContent='Surprise unlocked! Enjoy the silly sound show.';
+  page.querySelector('.hint').textContent='😂 SURPRISE! 😂';sequence();
+ }catch(e){started=false;status.textContent='Audio could not start. Tap once more.'}
+}
+page.addEventListener('click',start,{once:true});
+page.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();start()}});
+})();
 </script>
 </body>
 </html>
