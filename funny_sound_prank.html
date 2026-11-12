@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Funny Sound Surprise</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#151522;color:#fff;display:grid;place-items:center;min-height:100vh;margin:0}
+  main{width:min(90%,420px);text-align:center;background:#25253a;padding:28px;border-radius:22px;box-sizing:border-box}
+  h1{font-size:28px} p{color:#d8d8e8}
+  button{border:0;border-radius:12px;padding:14px 22px;margin:8px;font-size:17px;font-weight:700;cursor:pointer}
+  #start{background:#ffd54a;color:#222} #stop{background:#ff6666;color:#fff}
+  #status{min-height:28px;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+  <h1>😂 Surprise Sound Box</h1>
+  <p>Tap start to hear a silly sequence of sounds!</p>
+  <button id="start">▶ Start</button>
+  <button id="stop">■ Stop</button>
+  <div id="status">Ready</div>
+  <audio id="player" preload="auto"></audio>
+</main>
+<script>
+const tracks = [
+  {name:"Baby laughing",file:"laugh.mp3"},
+  {name:"Baby crying",file:"baby-cry.mp3"},
+  {name:"Funny cartoon sound",file:"funny.mp3"}
+];
+const player=document.getElementById("player");
+const status=document.getElementById("status");
+let index=0, playing=false;
+function next(){
+  if(!playing) return;
+  const track=tracks[index];
+  status.textContent="Now playing: "+track.name;
+  player.src=track.file;
+  player.currentTime=0;
+  player.play().catch(()=>{status.textContent="Tap Start again to allow audio.";playing=false;});
+  index=(index+1)%tracks.length;
+}
+player.addEventListener("ended",next);
+document.getElementById("start").addEventListener("click",()=>{
+  if(playing)return;
+  playing=true;
+  next();
+});
+document.getElementById("stop").addEventListener("click",()=>{
+  playing=false; player.pause(); player.currentTime=0;
+  status.textContent="Stopped";
+});
+</script>
+</body>
+</html>
